@@ -1,0 +1,459 @@
+/* ==============================================================================
+   COSMO AI — Celestial High-Aesthetic Dark Glass Design System
+   ============================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root {
+  --cosmo-bg-deep: #060813;
+  --cosmo-bg-card: rgba(14, 20, 36, 0.72);
+  --cosmo-bg-card-hover: rgba(22, 32, 56, 0.85);
+  --cosmo-border-subtle: rgba(255, 255, 255, 0.08);
+  --cosmo-border-glow: rgba(99, 102, 241, 0.4);
+  --cosmo-border-cyan: rgba(6, 182, 212, 0.4);
+  
+  --cosmo-purple: #8b5cf6;
+  --cosmo-indigo: #6366f1;
+  --cosmo-cyan: #06b6d4;
+  --cosmo-pink: #ec4899;
+  --cosmo-emerald: #10b981;
+  --cosmo-amber: #f59e0b;
+
+  --cosmo-gradient-primary: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #06b6d4 100%);
+  --cosmo-gradient-aurora: linear-gradient(135deg, #8b5cf6 0%, #ec4899 50%, #f59e0b 100%);
+  --cosmo-gradient-card: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%);
+
+  --cosmo-text-primary: #f8fafc;
+  --cosmo-text-secondary: #94a3b8;
+  --cosmo-text-tertiary: #64748b;
+  --cosmo-radius-lg: 18px;
+  --cosmo-radius-md: 12px;
+  --cosmo-radius-sm: 8px;
+}
+
+/* Base Body & App Container */
+html, body, [class*="css"] {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif !important;
+  color: var(--cosmo-text-primary);
+}
+
+.stApp {
+  background-color: var(--cosmo-bg-deep);
+  background-image: 
+    radial-gradient(ellipse at 15% 0%, rgba(99, 102, 241, 0.16) 0%, transparent 45%),
+    radial-gradient(ellipse at 85% 5%, rgba(6, 182, 212, 0.12) 0%, transparent 45%),
+    radial-gradient(ellipse at 50% 90%, rgba(168, 85, 247, 0.08) 0%, transparent 50%);
+  background-attachment: fixed;
+}
+
+/* ==============================================================================
+   COSMO AI Hero Header
+   ============================================================================== */
+.cosmo-hero {
+  background: linear-gradient(180deg, rgba(20, 28, 48, 0.75) 0%, rgba(11, 15, 28, 0.85) 100%);
+  border: 1px solid var(--cosmo-border-subtle);
+  border-radius: var(--cosmo-radius-lg);
+  padding: 28px 36px;
+  margin-bottom: 26px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+}
+
+.cosmo-hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--cosmo-gradient-primary);
+}
+
+.cosmo-hero-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.cosmo-brand-title {
+  font-family: 'Space Grotesk', sans-serif !important;
+  font-size: 2.2rem !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, #ffffff 15%, #c7d2fe 60%, #38bdf8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cosmo-brand-pill {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  background: rgba(99, 102, 241, 0.18);
+  border: 1px solid rgba(99, 102, 241, 0.4);
+  color: #c7d2fe;
+  vertical-align: middle;
+}
+
+.cosmo-hero-subtitle {
+  color: var(--cosmo-text-secondary);
+  font-size: 0.95rem;
+  margin-top: 6px;
+  max-width: 680px;
+  line-height: 1.5;
+}
+
+.cosmo-quick-stats {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.cosmo-stat-chip {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--cosmo-radius-md);
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.cosmo-stat-chip .stat-icon {
+  font-size: 1.25rem;
+}
+
+.cosmo-stat-chip .stat-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.cosmo-stat-chip .stat-num {
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: #ffffff;
+  line-height: 1.1;
+}
+
+.cosmo-stat-chip .stat-name {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--cosmo-text-tertiary);
+}
+
+/* ==============================================================================
+   Streamlit Tabs Styling
+   ============================================================================== */
+.stTabs [data-baseweb="tab-list"] {
+  gap: 8px;
+  background: rgba(14, 20, 36, 0.65);
+  border: 1px solid var(--cosmo-border-subtle);
+  padding: 6px;
+  border-radius: 14px;
+  backdrop-filter: blur(12px);
+  margin-bottom: 24px;
+}
+
+.stTabs [data-baseweb="tab"] {
+  border-radius: 10px !important;
+  padding: 8px 18px !important;
+  color: var(--cosmo-text-secondary) !important;
+  font-weight: 600 !important;
+  font-size: 0.9rem !important;
+  border: none !important;
+  background: transparent !important;
+  transition: all 0.2s ease !important;
+}
+
+.stTabs [data-baseweb="tab"]:hover {
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+.stTabs [aria-selected="true"] {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.25) 0%, rgba(6, 182, 212, 0.2) 100%) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(99, 102, 241, 0.4) !important;
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.25) !important;
+}
+
+.stTabs [data-baseweb="tab-border"] {
+  display: none !important;
+}
+
+/* ==============================================================================
+   Sidebar Styling
+   ============================================================================== */
+[data-testid="stSidebar"] {
+  background-color: rgba(9, 13, 24, 0.9) !important;
+  border-right: 1px solid var(--cosmo-border-subtle) !important;
+  backdrop-filter: blur(24px) !important;
+}
+
+[data-testid="stSidebar"] [data-testid="stVerticalBlock"] {
+  gap: 0.85rem;
+}
+
+.cosmo-sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 0 12px 0;
+}
+
+.cosmo-sidebar-logo {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: var(--cosmo-gradient-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.4);
+}
+
+.cosmo-sidebar-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  background: var(--cosmo-gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 0;
+  line-height: 1.1;
+}
+
+.cosmo-sidebar-tag {
+  font-size: 0.7rem;
+  color: var(--cosmo-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* ==============================================================================
+   Cards & Glass Containers
+   ============================================================================== */
+.cosmo-card {
+  background: var(--cosmo-bg-card);
+  border: 1px solid var(--cosmo-border-subtle);
+  border-radius: var(--cosmo-radius-lg);
+  padding: 22px;
+  backdrop-filter: blur(16px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-bottom: 16px;
+  position: relative;
+}
+
+.cosmo-card:hover {
+  border-color: var(--cosmo-border-glow);
+  box-shadow: 0 12px 32px rgba(99, 102, 241, 0.16);
+  transform: translateY(-2px);
+}
+
+.cosmo-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.cosmo-card-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ==============================================================================
+   Badges, Tags & Chips
+   ============================================================================== */
+.cosmo-badge-version {
+  background: rgba(99, 102, 241, 0.18);
+  color: #a5b4fc;
+  border: 1px solid rgba(99, 102, 241, 0.35);
+  padding: 3px 10px;
+  border-radius: 9999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.cosmo-badge-active {
+  background: rgba(16, 185, 129, 0.18);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  padding: 3px 10px;
+  border-radius: 9999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.cosmo-badge-score {
+  background: rgba(6, 182, 212, 0.18);
+  color: #38bdf8;
+  border: 1px solid rgba(6, 182, 212, 0.4);
+  padding: 3px 9px;
+  border-radius: 9999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.cosmo-tag {
+  background: rgba(255, 255, 255, 0.04);
+  color: #cbd5e1;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 0.74rem;
+  font-weight: 500;
+  display: inline-block;
+  margin-right: 4px;
+  margin-bottom: 4px;
+}
+
+.cosmo-tag:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+/* ==============================================================================
+   Prompt Synthesizer Terminal Box
+   ============================================================================== */
+.cosmo-prompt-terminal {
+  background: rgba(9, 13, 24, 0.88);
+  border: 1px solid rgba(139, 92, 246, 0.35);
+  border-left: 4px solid var(--cosmo-purple);
+  border-radius: var(--cosmo-radius-md);
+  padding: 16px 20px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  color: #e2e8f0;
+  line-height: 1.55;
+  margin: 12px 0;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.cosmo-prompt-terminal strong {
+  color: #c4b5fd;
+}
+
+/* ==============================================================================
+   Input Elements & Button Enhancements
+   ============================================================================== */
+.stTextInput input, .stTextArea textarea {
+  background: rgba(14, 20, 36, 0.7) !important;
+  border: 1px solid var(--cosmo-border-subtle) !important;
+  border-radius: 12px !important;
+  color: #f8fafc !important;
+  padding: 10px 14px !important;
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+  transition: all 0.2s ease !important;
+}
+
+.stTextInput input:focus, .stTextArea textarea:focus {
+  border-color: var(--cosmo-purple) !important;
+  box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.3) !important;
+}
+
+/* Streamlit Buttons */
+.stButton button {
+  border-radius: 10px !important;
+  font-weight: 600 !important;
+  font-size: 0.88rem !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.stButton button:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35) !important;
+}
+
+/* Primary Button High-Aesthetic Pulse */
+button[kind="primary"] {
+  background: var(--cosmo-gradient-primary) !important;
+  border: none !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 18px rgba(99, 102, 241, 0.35) !important;
+}
+
+button[kind="primary"]:hover {
+  box-shadow: 0 6px 24px rgba(99, 102, 241, 0.5) !important;
+}
+
+/* ==============================================================================
+   Version Timeline Node Styling
+   ============================================================================== */
+.cosmo-timeline-node {
+  position: relative;
+  padding-left: 24px;
+  border-left: 2px solid rgba(99, 102, 241, 0.3);
+  margin-left: 12px;
+  margin-bottom: 20px;
+}
+
+.cosmo-timeline-node::before {
+  content: '';
+  position: absolute;
+  left: -7px;
+  top: 14px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--cosmo-purple);
+  box-shadow: 0 0 10px var(--cosmo-purple);
+}
+
+.cosmo-timeline-node.active::before {
+  background: var(--cosmo-emerald);
+  box-shadow: 0 0 12px var(--cosmo-emerald);
+}
+
+/* Image Presentation Easel */
+.cosmo-easel {
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+::-webkit-scrollbar-track {
+  background: var(--cosmo-bg-deep);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.14);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.28);
+}

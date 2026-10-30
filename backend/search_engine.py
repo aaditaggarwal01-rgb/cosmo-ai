@@ -1,17 +1,20 @@
-"""Natural Language Image Search Engine.
+"""Natural Language Image Search Engine with JSON Vector Retrieval.
 
 Supports:
 1. OpenAI text-embedding-3-small semantic vector similarity
 2. Google Gemini embeddings
-3. Scikit-learn TF-IDF & Cosine Similarity local vector search
-4. Keyword and Semantic Concept expansion matching
+3. Local normalized dense vector embeddings (128-dim HashingVectorizer)
+4. Scikit-learn TF-IDF & Cosine Similarity vector search
+5. Keyword and Semantic Concept expansion matching
+6. JSON-based lightweight Vector Database querying
 """
 
 import os
+import re
 from typing import List, Dict, Any, Optional, Tuple
 import numpy as np
 import requests
-from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.feature_extraction.text import TfidfVectorizer, HashingVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
 from backend.config import (
@@ -30,6 +33,7 @@ CONCEPT_MAP = {
     "portrait": ["portrait", "portraits", "person", "persons", "people", "woman", "women", "man", "men", "girl", "girls", "face", "faces", "smile", "smiling", "lifestyle"],
     "sunset": ["sunset", "sunsets", "golden hour", "dusk", "evening", "sunlight", "warm", "amber", "glow"],
     "nature": ["nature", "trees", "tree", "park", "parks", "grass", "grassy", "leaves", "leaf", "autumn", "foliage", "outdoors", "outdoor", "greenery"],
+    "mountain": ["mountain", "mountains", "peak", "peaks", "hills", "cliff", "alps", "hiking", "valley", "landscape", "rock", "rocky", "scenic"],
     "edited": ["v1", "v2", "v3", "cyberpunk", "studio", "watercolor", "vintage", "noir", "edit", "edits", "edited", "preset", "reversion"]
 }
 
@@ -39,7 +43,8 @@ def stem_word(w: str) -> str:
     w = w.lower().strip()
     irregulars = {
         "leaves": "leaf", "leafs": "leaf", "women": "woman", "men": "man",
-        "people": "person", "children": "child", "puppies": "puppy", "beaches": "beach"
+        "people": "person", "children": "child", "puppies": "puppy", "beaches": "beach",
+        "mountains": "mountain"
     }
     if w in irregulars:
         return irregulars[w]
@@ -58,6 +63,13 @@ def stem_word(w: str) -> str:
     if w.endswith("ed") and len(w) > 4:
         return w[:-2]
     return w
+
+
+def get_local_dense_embedding(text: str, dim: int = 128) -> List[float]:
+    """Compute normalized 128-dim dense semantic vector embedding locally without external APIs."""
+    vec = HashingVectorizer(n_features=dim, norm="l2", alternate_sign=False)
+    arr = vec.transform([text]).toarray()[0]
+    return [round(float(v), 5) for v in arr]
 
 
 def get_openai_embedding(text: str, api_key: Optional[str] = None) -> Optional[List[float]]:
@@ -103,8 +115,25 @@ def get_gemini_embedding(text: str, api_key: Optional[str] = None) -> Optional[L
     return None
 
 
+def compute_embedding(
+    text: str,
+    openai_key: Optional[str] = None,
+    gemini_key: Optional[str] = None
+) -> List[float]:
+    """Unified embedding generator with fallback hierarchy (OpenAI -> Gemini -> Local Dense)."""
+    if openai_key:
+        emb = get_openai_embedding(text, api_key=openai_key)
+        if emb:
+            return emb
+    if gemini_key:
+        emb = get_gemini_embedding(text, api_key=gemini_key)
+        if emb:
+            return emb
+    return get_local_dense_embedding(text)
+
+
 class SearchEngine:
-    """Hybrid semantic & concept search engine for image collections."""
+    """Hybrid semantic vector & concept search engine with JSON Vector DB retrieval."""
 
     def __init__(self):
         pass
@@ -134,9 +163,10 @@ class SearchEngine:
         query: str,
         images: List[Dict[str, Any]],
         top_k: int = 24,
-        openai_key: Optional[str] = None
+        openai_key: Optional[str] = None,
+        gemini_key: Optional[str] = None
     ) -> List[Tuple[Dict[str, Any], float, List[str]]]:
-        """Perform natural language search over image library.
+        """Perform natural language vector search over image library.
         
         Returns:
             List of tuples: (image_dict, relevance_score_0_to_1, matched_reasons)
@@ -146,10 +176,9 @@ class SearchEngine:
 
         clean_query = query.strip().lower()
         if not clean_query:
-            # Return all images with neutral score 1.0
-            return [(img, 1.0, ["Default order"]) for img in images]
+            return [(img, 1.0, ["Catalog order"]) for img in images]
 
-        # 1. Clean conversational query prefixes repeatedly
+        # 1. Clean conversational query prefixes
         stripped_query = clean_query
         changed = True
         prefixes = [
@@ -168,10 +197,20 @@ class SearchEngine:
                     stripped_query = stripped_query[len(prefix):].strip()
                     changed = True
 
-        # 2. Vector search via TF-IDF (local, robust, instant)
+        # 2. Compute query embedding vector for dense vector retrieval
+        query_vec = None
+        try:
+            raw_q_emb = compute_embedding(clean_query, openai_key=openai_key, gemini_key=gemini_key)
+            if raw_q_emb:
+                query_vec = np.array(raw_q_emb, dtype=np.float32)
+                q_norm = np.linalg.norm(query_vec)
+                if q_norm > 1e-6:
+                    query_vec = query_vec / q_norm
+        except Exception as e:
+            print(f"Query embedding computation error: {e}")
+
+        # 3. Vector search via TF-IDF (local, robust, instant)
         documents = [self._prepare_document_text(img) for img in images]
-        
-        # Add query and its stems to corpus
         query_tokens = re_tokenize(f"{clean_query} {stripped_query}")
         query_stems = [stem_word(w) for w in query_tokens]
         query_doc = f"{clean_query} {stripped_query} " + " ".join(query_stems)
@@ -185,14 +224,14 @@ class SearchEngine:
             )
             tfidf_matrix = vectorizer.fit_transform(all_texts)
             doc_vectors = tfidf_matrix[:-1]
-            query_vector = tfidf_matrix[-1:]
+            q_vector = tfidf_matrix[-1:]
             
-            cos_scores = cosine_similarity(query_vector, doc_vectors).flatten()
+            cos_scores = cosine_similarity(q_vector, doc_vectors).flatten()
         except Exception as e:
             print(f"TF-IDF vectorizer error: {e}")
             cos_scores = np.zeros(len(images))
 
-        # 3. Hybrid Semantic Concept Match & Tag Boosting
+        # 4. Hybrid Semantic Concept Match & Tag Boosting
         STOP_WORDS = {
             "show", "me", "the", "ones", "with", "a", "an", "of", "in", "on", "at", "by", "for",
             "images", "image", "photos", "photo", "pictures", "picture", "find", "get", "look",
@@ -217,6 +256,20 @@ class SearchEngine:
         for idx, img in enumerate(images):
             tfidf_score = float(cos_scores[idx]) if idx < len(cos_scores) else 0.0
             
+            # 5. Dense vector retrieval from JSON Vector Store (img['embedding'])
+            vector_sim = 0.0
+            img_emb = img.get("embedding")
+            if query_vec is not None and img_emb and len(img_emb) == len(query_vec):
+                try:
+                    img_arr = np.array(img_emb, dtype=np.float32)
+                    i_norm = np.linalg.norm(img_arr)
+                    if i_norm > 1e-6:
+                        img_arr = img_arr / i_norm
+                        vector_sim = float(np.dot(query_vec, img_arr))
+                        vector_sim = max(0.0, min(1.0, vector_sim))
+                except Exception:
+                    vector_sim = 0.0
+
             matched_keywords = []
             bonus = 0.0
             
@@ -259,10 +312,12 @@ class SearchEngine:
                     bonus += 0.15
                     matched_keywords.append(f"Caption: '{term}'")
 
-            # Final normalized composite score
-            composite_score = min(1.0, (tfidf_score * 0.6) + min(0.6, bonus))
+            if vector_sim > 0.15:
+                matched_keywords.append(f"Vector Similarity ({int(vector_sim*100)}%)")
 
-            # If user explicitly searched and image has positive match
+            # Final normalized composite score blending Vector Embeddings, TF-IDF & Concept Boosting
+            composite_score = min(1.0, (vector_sim * 0.40) + (tfidf_score * 0.30) + min(0.40, bonus))
+
             if composite_score > 0.05 or not clean_query:
                 reasons = list(dict.fromkeys(matched_keywords))[:3]
                 if not reasons and composite_score > 0.1:
@@ -276,5 +331,4 @@ class SearchEngine:
 
 def re_tokenize(text: str) -> List[str]:
     """Helper to split string into tokens without punctuation."""
-    import re
     return re.findall(r"\b[a-zA-Z0-9_-]+\b", text.lower())

@@ -31,7 +31,7 @@ def create_thumbnail(image_path: Path, thumb_path: Path, size=(320, 320)) -> Pat
 
 
 class StorageManager:
-    """Manages image persistence, metadata catalog, and version history tree."""
+    """Manages image persistence, metadata catalog, and version history tree as a JSON Vector Store."""
 
     def __init__(self, metadata_path: Path = METADATA_FILE):
         self.metadata_path = metadata_path
@@ -77,9 +77,10 @@ class StorageManager:
         caption: Optional[str] = None,
         tags: Optional[List[str]] = None,
         objects: Optional[List[str]] = None,
-        dominant_colors: Optional[List[str]] = None
+        dominant_colors: Optional[List[str]] = None,
+        embedding: Optional[List[float]] = None
     ) -> Dict[str, Any]:
-        """Save a new original image, generate thumbnail, and register v0."""
+        """Save a new original image, generate thumbnail, compute vector embedding, and register v0."""
         image_id = f"img_{uuid.uuid4().hex[:10]}"
         safe_suffix = Path(filename).suffix.lower()
         if safe_suffix not in [".jpg", ".jpeg", ".png", ".webp"]:
@@ -103,6 +104,16 @@ class StorageManager:
 
         # Generate thumbnail
         create_thumbnail(orig_path, thumb_path)
+
+        # Auto-compute dense vector embedding if not explicitly provided
+        if embedding is None:
+            try:
+                from backend.search_engine import compute_embedding
+                doc_text = f"{title or ''} {caption or ''} {' '.join(tags or [])} {' '.join(objects or [])}"
+                embedding = compute_embedding(doc_text)
+            except Exception as e:
+                print(f"Auto-embedding calculation failed: {e}")
+                embedding = None
 
         now = _now_iso()
         v0_record = {
@@ -130,7 +141,7 @@ class StorageManager:
             "tags": tags or [],
             "objects": objects or [],
             "dominant_colors": dominant_colors or [],
-            "embedding": None,
+            "embedding": embedding,
             "current_version_id": v0_record["version_id"],
             "versions": [v0_record]
         }
@@ -179,10 +190,10 @@ class StorageManager:
         edited_image: Image.Image,
         prompt: str,
         edit_type: str = "custom_prompt",
-        model_used: str = "ai_api",
+        model_used: str = "local_neural",
         notes: str = ""
     ) -> Optional[Dict[str, Any]]:
-        """Register a new edited version of an image, generating version file & thumbnail."""
+        """Add an edited revision to an image's version history tree."""
         data = self._load_data()
         img = data.get("images", {}).get(image_id)
         if not img:
